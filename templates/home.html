@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Crimson Balance{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center text-dark">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Welcome to Crimson Balance</h1>
+        <p class="lead">Connecting donors, recipients, and doctors for optimal blood management</p>
+        <div class="mt-4">
+            {% if user.is_authenticated %}
+                <span class="user-type-badge {{ user.user_type }}-badge">{{ user.get_user_type_display }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-8">
+        <!-- Blood Inventory Status -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar me-2"></i>Blood Inventory Status
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for inventory in blood_inventory %}
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card text-center {% if inventory.is_critical %}urgent-card{% endif %}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ inventory.blood_group }}</h5>
+                                <p class="card-text display-6">{{ inventory.available_units }}</p>
+                                <small class="text-muted">Units Available</small>
+                                {% if inventory.is_critical %}
+                                <span class="badge bg-danger mt-2">Critical</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bolt me-2"></i>Quick Actions
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if user.is_authenticated %}
+                        {% if user.user_type == 'donor' %}
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'request_appointment' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-calendar-plus fa-2x mb-2"></i><br>
+                                Schedule Donation
+                            </a>
+                        </div>
+                        {% elif user.user_type == 'recipient' %}
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'request_blood' %}" class="btn btn-danger w-100">
+                                <i class="fas fa-tint fa-2x mb-2"></i><br>
+                                Request Blood
+                            </a>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'information_center' %}" class="btn btn-success w-100">
+                            <i class="fas fa-info-circle fa-2x mb-2"></i><br>
+                            Learn More
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'dashboard' %}" class="btn btn-info w-100">
+                            <i class="fas fa-comments fa-2x mb-2"></i><br>
+                            Chat Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- User Stats -->
+        {% if user.is_authenticated %}
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-circle me-2"></i>My Dashboard
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" class="rounded-circle" width="100" height="100" alt="Profile">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <i class="fas fa-user fa-3x text-light"></i>
+                    </div>
+                    {% endif %}
+                    <h5 class="mt-3">{{ user.get_full_name|default:user.username }}</h5>
+                    <span class="user-type-badge {{ user.user_type }}-badge">{{ user.get_user_type_display }}</span>
+                </div>
+                
+                <ul class="list-group list-group-flush">
+                    {% if user.user_type == 'donor' %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Total Donations</span>
+                        <span class="fw-bold">{{ donation_count }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Last Donation</span>
+                        <span>{{ last_donation|date:"M d, Y"|default:"Never" }}</span>
+                    </li>
+                    {% elif user.user_type == 'recipient' %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Blood Requests</span>
+                        <span class="fw-bold">{{ request_count }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Fulfilled Requests</span>
+                        <span class="fw-bold">{{ fulfilled_requests }}</span>
+                    </li>
+                    {% endif %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Blood Group</span>
+                        <span class="fw-bold">{{ user.blood_group|default:"Not specified" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {% else %}
+        <!-- Login/Register Prompt -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-plus me-2"></i>Join Our Community
+            </div>
+            <div class="card-body text-center">
+                <h5>Become a Lifesaver</h5>
+                <p>Register today and start making a difference</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'register' %}" class="btn btn-danger">Register as Donor</a>
+                    <a href="{% url 'register' %}" class="btn btn-primary">Register as Recipient</a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-secondary">Login</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Emergency Contacts -->
+        <div class="card mt-4">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-phone-alt me-2"></i>Emergency Contacts
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-ambulance text-danger me-2"></i>Ambulance: 102</li>
+                    <li class="mb-2"><i class="fas fa-hospital text-danger me-2"></i>Emergency Blood: 123-456-7890</li>
+                    <li><i class="fas fa-life-ring text-danger me-2"></i>24/7 Support: 987-654-3210</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Information Posts -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-newspaper me-2"></i>Latest Updates
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for post in recent_posts %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            {% if post.image %}
+                            <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 150px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body">
+                                <h6 class="card-title">{{ post.title }}</h6>
+                                <p class="card-text small">{{ post.content|truncatewords:20 }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">{{ post.created_at|date:"M d, Y" }}</small>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Read More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-4">
+                        <p class="text-muted">No updates available at the moment.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

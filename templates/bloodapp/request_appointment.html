@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Schedule Appointment - Crimson Balance{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Schedule Blood Donation Appointment</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Appointment Type *</label>
+                                <select class="form-select" name="appointment_type" required>
+                                    <option value="">Select Type</option>
+                                    <option value="whole_blood">Whole Blood Donation</option>
+                                    <option value="platelets">Platelet Donation</option>
+                                    <option value="plasma">Plasma Donation</option>
+                                    <option value="double_red">Double Red Cell</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Preferred Date & Time *</label>
+                                <input type="datetime-local" class="form-control" name="scheduled_date" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Blood Group</label>
+                                <input type="text" class="form-control" name="blood_group" 
+                                       value="{{ user.blood_group|default:'' }}" readonly>
+                                <div class="form-text">Update your profile to change blood group</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Preferred Donation Center</label>
+                                <select class="form-select" name="donation_center">
+                                    <option value="main">Main Blood Center - Downtown</option>
+                                    <option value="north">North District Center</option>
+                                    <option value="south">South District Center</option>
+                                    <option value="east">East District Center</option>
+                                    <option value="west">West District Center</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Special Requirements or Notes</label>
+                        <textarea class="form-control" name="notes" rows="3" 
+                                  placeholder="Any special requirements, medications, or notes..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Important Information</h6>
+                        <ul class="mb-0">
+                            <li>Please arrive 15 minutes before your scheduled time</li>
+                            <li>Bring a valid government ID</li>
+                            <li>Drink plenty of water before donation</li>
+                            <li>Eat a healthy meal 2-3 hours before donation</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-calendar-plus me-2"></i>Schedule Appointment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Donation Centers Info -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Donation Centers</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6>Main Blood Center</h6>
+                                <p class="small mb-1">123 Health Street</p>
+                                <p class="small mb-1">Downtown</p>
+                                <p class="small mb-0">Hours: 8 AM - 8 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6>North District Center</h6>
+                                <p class="small mb-1">456 North Avenue</p>
+                                <p class="small mb-1">North District</p>
+                                <p class="small mb-0">Hours: 9 AM - 6 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6>South District Center</h6>
+                                <p class="small mb-1">789 South Road</p>
+                                <p class="small mb-1">South District</p>
+                                <p class="small mb-0">Hours: 9 AM - 5 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

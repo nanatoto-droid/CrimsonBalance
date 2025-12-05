@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Request Blood - Crimson Balance{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-tint me-2"></i>Request Blood</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Patient Name *</label>
+                                <input type="text" class="form-control" name="patient_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Patient Age *</label>
+                                <input type="number" class="form-control" name="patient_age" min="0" max="120" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Blood Group Required *</label>
+                                <select class="form-select" name="blood_group" required>
+                                    <option value="">Select Blood Group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Units Required *</label>
+                                <input type="number" class="form-control" name="units_required" min="1" max="10" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Urgency Level *</label>
+                                <select class="form-select" name="urgency" required>
+                                    <option value="low">Low (Planned surgery)</option>
+                                    <option value="medium">Medium (Scheduled treatment)</option>
+                                    <option value="high">High (Emergency)</option>
+                                    <option value="critical">Critical (Life-threatening)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Required Date *</label>
+                                <input type="date" class="form-control" name="required_date" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Hospital Name *</label>
+                        <input type="text" class="form-control" name="hospital_name" required>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Hospital Address *</label>
+                        <textarea class="form-control" name="hospital_address" rows="2" required></textarea>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Medical Condition *</label>
+                        <textarea class="form-control" name="medical_condition" rows="3" required></textarea>
+                        <div class="form-text">Please describe the medical condition requiring blood transfusion</div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Additional Notes</label>
+                        <textarea class="form-control" name="additional_notes" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Blood Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Emergency Contact Card -->
+        <div class="card mt-4 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-phone-alt me-2"></i>Emergency Contacts</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-ambulance text-danger me-2"></i>Immediate Assistance</h6>
+                        <p>Call 102 for ambulance</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-hospital text-danger me-2"></i>Emergency Blood Bank</h6>
+                        <p>Call 123-456-7890</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
