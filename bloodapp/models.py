@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.urls import reverse
+
 
 User = get_user_model()
 
@@ -58,9 +60,20 @@ class InformationPost(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=True)
     image = models.ImageField(upload_to='info_posts/', blank=True)
+
+    is_featured = models.BooleanField(default=False)
     
     def __str__(self):
         return self.title
+    
+    def get_absolute_url(self):
+        return reverse('information_detail', args=[self.pk])
+
+    @property
+    def excerpt(self):
+        return (self.content or '')[:180]
+
+
 
 class Appointment(models.Model):
     STATUS_CHOICES = (
@@ -76,6 +89,7 @@ class Appointment(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
     
     def __str__(self):
         return f"{self.user.username} - {self.appointment_type}"

@@ -8,8 +8,8 @@ from django.core.paginator import Paginator
 from datetime import timedelta
 from .models import BloodRequest
 from django.utils.dateparse import parse_date
-
-
+from .forms import InformationPostForm
+from django.utils import timezone
 
 def home(request):
     context = {
@@ -42,6 +42,46 @@ def donation_history(request):
         'donations': donations,
         'total_ml': total_ml,
         'next_eligible': next_eligible,
+    })
+
+@login_required
+def donor_appointments(request):
+    if request.user.user_type != 'donor':
+        messages.error(request, 'Only donors can view appointments.')
+        return redirect('home')
+
+    appointments = Appointment.objects.filter(user=request.user).order_by('-scheduled_date')
+
+    total_count = appointments.count()
+    confirmed_count = appointments.filter(status='confirmed').count()
+    completed_count = appointments.filter(status='completed').count()
+    pending_count = appointments.filter(status='pending').count()
+    cancelled_count = appointments.filter(status='cancelled').count()
+
+    return render(request, 'bloodapp/donor_appointments.html', {
+        'appointments': appointments,
+        'total_count': total_count,
+        'confirmed_count': confirmed_count,
+        'completed_count': completed_count,
+        'pending_count': pending_count,
+        'cancelled_count': cancelled_count,
+    })
+
+
+@login_required
+def recipient_history(request):
+    if request.user.user_type != 'recipient':
+        messages.error(request, 'Only recipients can view request history.')
+        return redirect('home')
+
+    requests = BloodRequest.objects.filter(recipient=request.user).order_by('-required_date')
+    fulfilled_count = requests.filter(is_fulfilled=True).count()
+    pending_count = requests.filter(is_fulfilled=False).count()
+
+    return render(request, 'bloodapp/recipient_history.html', {
+        'requests': requests,
+        'fulfilled_count': fulfilled_count,
+        'pending_count': pending_count,
     })
 
 
@@ -179,10 +219,147 @@ def information_center(request):
     paginator = Paginator(posts, 6)  # Show 6 posts per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+    featured_posts = InformationPost.objects.filter(is_published=True, is_featured=True).order_by('-created_at')[:3]
+
     return render(request, 'bloodapp/information_centre.html', {
         'posts': page_obj,
         'categories': categories,
         'active_category': category,
         'search_query': search_query,
+        'featured_posts': featured_posts,
     })
+    
+ 
+@login_required
+def information_create(request):
+    # Only doctors and admins can create posts
+    if request.user.user_type not in ['doctor', 'admin']:
+        messages.error(request, 'Only doctors or admins can create posts.')
+        return redirect('information_center')
+
+    if request.method == 'POST':
+        form = InformationPostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.created_at = timezone.now()
+            post.save()
+            messages.success(request, 'Information post created.')
+            return redirect('information_detail', post.pk)
+    else:
+        form = InformationPostForm()
+
+    return render(request, 'bloodapp/information_form.html', {'form': form, 'mode': 'create'})
+
+
+@login_required
+def information_edit(request, pk):
+    # Only doctors and admins can edit posts
+    if request.user.user_type not in ['doctor', 'admin']:
+        messages.error(request, 'Only doctors or admins can edit posts.')
+        return redirect('information_center')
+
+    post = get_object_or_404(InformationPost, pk=pk)
+    if request.method == 'POST':
+        form = InformationPostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Information post updated.')
+            return redirect('information_detail', post.pk)
+    else:
+        form = InformationPostForm(instance=post)
+
+    return render(request, 'bloodapp/information_form.html', {'form': form, 'mode': 'edit', 'post': post})
+
+
+@login_required
+def information_delete(request, pk):
+    # Only doctors and admins can delete posts
+    if request.user.user_type not in ['doctor', 'admin']:
+        messages.error(request, 'Only doctors or admins can delete posts.')
+        return redirect('information_center')
+
+    post = get_object_or_404(InformationPost, pk=pk)
+    post.delete()
+    messages.success(request, 'Information post deleted.')
+    return redirect('information_center')
+
+
+def information_detail(request, pk):
+    # Everyone can view published posts
+    post = get_object_or_404(InformationPost, pk=pk)
+    if not post.is_published and (not request.user.is_authenticated or request.user.user_type not in ['doctor', 'admin']):
+        messages.error(request, 'This post is not published.')
+        return redirect('information_center')
+
+    return render(request, 'bloodapp/information_detail.html', {'post': post})
+
+
+
+@login_required
+def doctor_dashboard(request):
+    if request.user.user_type != 'doctor':
+        messages.error(request, 'Only doctors can access the doctor dashboard.')
+        return redirect('home')
+
+    donations = BloodDonation.objects.all().order_by('-donation_date')
+    requests = BloodRequest.objects.all().order_by('-required_date')
+    appointments = Appointment.objects.all().order_by('-scheduled_date')
+    inventory = BloodInventory.objects.all()
+
+    # Summary counts
+    donation_count = donations.count()
+    request_count = requests.count()
+    appointment_count = appointments.count()
+    critical_inventory = inventory.filter(available_units__lte=models.F('critical_level')).count()
+
+    return render(request, 'bloodapp/doctor_dashboard.html', {
+        'donations': donations,       
+        'requests': requests,         
+        'appointments': appointments, 
+        'inventory': inventory,
+        'donation_count': donation_count,
+        'request_count': request_count,
+        'appointment_count': appointment_count,
+        'critical_inventory': critical_inventory,
+    })
+
+@login_required
+def process_donation(request, donation_id):
+    if request.user.user_type != 'doctor':
+        messages.error(request, 'Only doctors can process donations.')
+        return redirect('home')
+
+    donation = get_object_or_404(BloodDonation, id=donation_id)
+    donation.is_processed = True
+    donation.processed_date = timezone.now()
+    donation.save()
+    messages.success(request, 'Donation marked as processed.')
+    return redirect('doctor_dashboard')
+
+
+@login_required
+def fulfill_request(request, request_id):
+    if request.user.user_type != 'doctor':
+        messages.error(request, 'Only doctors can fulfill requests.')
+        return redirect('home')
+
+    req = get_object_or_404(BloodRequest, id=request_id)
+    req.is_fulfilled = True
+    req.fulfilled_date = timezone.now()
+    req.save()
+    messages.success(request, 'Request marked as fulfilled.')
+    return redirect('doctor_dashboard')
+
+
+@login_required
+def update_appointment_status(request, appointment_id, status):
+    if request.user.user_type != 'doctor':
+        messages.error(request, 'Only doctors can update appointments.')
+        return redirect('home')
+
+    appt = get_object_or_404(Appointment, id=appointment_id)
+    appt.status = status
+    appt.save()
+    messages.success(request, f'Appointment marked as {status}.')
+    return redirect('doctor_dashboard')

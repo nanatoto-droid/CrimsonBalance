@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}{% if mode == 'create' %}New Post{% else %}Edit Post{% endif %} - Crimson Balance{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          {% if mode == 'create' %}Create Information Post{% else %}Edit Information Post{% endif %}
+        </h5>
+        <a href="{% url 'information_center' %}" class="btn btn-sm btn-outline-secondary">Back</a>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            {{ form.title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Content</label>
+            {{ form.content }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            {{ form.category }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Image (optional)</label>
+            {{ form.image }}
+          </div>
+          <div class="form-check mb-2">
+            {{ form.is_published }} <label class="form-check-label ms-1">Publish</label>
+          </div>
+          <div class="form-check mb-4">
+            {{ form.is_featured }} <label class="form-check-label ms-1">Feature on top</label>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            {% if mode == 'create' %}Create{% else %}Save Changes{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

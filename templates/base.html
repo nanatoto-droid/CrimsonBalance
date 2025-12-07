@@ -138,17 +138,33 @@
                         <a class="nav-link" href="{% url 'information_center' %}">Information Center</a>
                     </li>
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'donation_history' %}">My Donations</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">Messages</a>
-                    </li>
-                    {% if user.user_type == 'doctor' or user.user_type == 'admin' %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}">Admin Panel</a>
-                    </li>
-                    {% endif %}
+                        {% if user.user_type == 'donor' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'donation_history' %}">My Donations</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'donor_appointments' %}">My Appointments</a>
+                        </li>
+
+                        {% elif user.user_type == 'recipient' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'recipient_history' %}">My Requests</a>
+                        </li>
+                        {% endif %}
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">Messages</a>
+                        </li>
+
+                        {% if  user.user_type == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin:index' %}">Admin Panel</a>
+                        </li>
+                        {% elif user.user_type == 'doctor' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'doctor_dashboard' %}">Doctor Dashboard</a>
+                        </li>
+                        {% endif %}
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">

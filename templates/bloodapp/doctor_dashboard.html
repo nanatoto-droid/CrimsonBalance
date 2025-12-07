@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Doctor Dashboard - Crimson Balance{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-user-md me-2"></i>Doctor Dashboard</h2>
+        <hr>
+           <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Donations</h6>
+                            <p class="display-6">{{ donation_count }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Requests</h6>
+                            <p class="display-6">{{ request_count }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Appointments</h6>
+                            <p class="display-6">{{ appointment_count }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Critical Inventory</h6>
+                            <p class="display-6">{{ critical_inventory }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>     
+        </div>
+    </div>
+
+  <!-- Donation Review Section  -->
+    
+<div class="card mt-4">
+    <div class="card-header"><i class="fas fa-tint me-2"></i>Donation Review</div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <tr><th>Donor</th><th>Date</th><th>Blood Group</th><th>Quantity</th><th>Status</th></tr>
+            {% for donation in donations %}
+            <tr>
+                <td>{{ donation.donor.username }}</td>
+                <td>{{ donation.donation_date|date:"M d, Y" }}</td>
+                <td>{{ donation.blood_group }}</td>
+                <td>{{ donation.quantity_ml }} ml</td>
+                <td>{% if donation.is_processed %}Processed{% else %}Pending{% endif %}</td>
+                <td>{% if not donation.is_processed %}
+                    <a href="{% url 'process_donation' donation.id %}" class="btn btn-sm btn-success">Mark Processed</a>
+                    {% else %}  
+                    <span class="badge bg-success">Processed</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<!-- Recipient Request Management Section -->
+<div class="card mt-4">
+    <div class="card-header"><i class="fas fa-hand-holding-medical me-2"></i>Recipient Requests</div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <tr><th>Patient</th><th>Blood Group</th><th>Units</th><th>Urgency</th><th>Status</th></tr>
+            {% for req in requests %}
+            <tr>
+                <td>{{ req.patient_name }}</td>
+                <td>{{ req.blood_group }}</td>
+                <td>{{ req.units_required }}</td>
+                <td>{{ req.get_urgency_display }}</td>
+                <td>{% if req.is_fulfilled %}Fulfilled{% else %}Pending{% endif %}</td>
+                <td>
+                    {% if not req.is_fulfilled %}
+                    <a href="{% url 'fulfill_request' req.id %}" class="btn btn-sm btn-primary">Fulfill</a>
+                    {% else %}
+                    <span class="badge bg-success">Fulfilled</span>
+                    {% endif %}
+                </td>              
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<!-- Appointment Management Section -->
+ <div class="card mt-4">
+    <div class="card-header"><i class="fas fa-calendar-check me-2"></i>Appointments</div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <tr><th>Donor</th><th>Type</th><th>Date</th><th>Status</th></tr>
+            {% for appt in appointments %}
+            <tr>
+                <td>{{ appt.user.username }}</td>
+                <td>{{ appt.appointment_type }}</td>
+                <td>{{ appt.scheduled_date|date:"M d, Y H:i" }}</td>
+                <td>{{ appt.get_status_display }}</td>
+                <td>
+                    <a href="{% url 'update_appointment_status' appt.id 'confirmed' %}" class="btn btn-sm btn-success">Confirm</a>
+                    <a href="{% url 'update_appointment_status' appt.id 'completed' %}" class="btn btn-sm btn-info">Complete</a>
+                    <a href="{% url 'update_appointment_status' appt.id 'cancelled' %}" class="btn btn-sm btn-danger">Cancel</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+
+<!-- Blood Inventory -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Blood Inventory</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr><th>Blood Group</th><th>Available Units</th><th>Critical Level</th></tr>
+                    {% for item in inventory %}
+                    <tr>
+                        <td>{{ item.blood_group }}</td>
+                        <td>{{ item.available_units }}</td>
+                        <td>{{ item.critical_level }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div> 
+{% endblock %}

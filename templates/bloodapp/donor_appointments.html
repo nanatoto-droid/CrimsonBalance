@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}My Appointments - Crimson Balance{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>My Appointments</h4>
+                <a href="{% url 'request_appointment' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>New Appointment
+                </a>
+            </div>
+            <div class="card-body">
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appt in appointments %}
+                            <tr>
+                                <td>{{ appt.scheduled_date|date:"M d, Y H:i" }}</td>
+                                <td>{{ appt.appointment_type }}</td>
+                                <td>
+                                    {% if appt.status == 'confirmed' %}
+                                    <span class="badge bg-success">Confirmed</span>
+                                    {% elif appt.status == 'completed' %}
+                                    <span class="badge bg-info">Completed</span>
+                                    {% elif appt.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ appt.notes|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h4>No Appointments Yet</h4>
+                    <p class="text-muted">You haven't scheduled any appointments yet.</p>
+                    <a href="{% url 'request_appointment' %}" class="btn btn-primary mt-3">
+                        <i class="fas fa-plus me-2"></i>Schedule Your First Appointment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% if appointments %}
+<div class="row mt-4">
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-title">Total</h6>
+                <p class="display-6">{{ total_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-title">Confirmed</h6>
+                <p class="display-6">{{ confirmed_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-title">Completed</h6>
+                <p class="display-6">{{ completed_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-title">Pending</h6>
+                <p class="display-6">{{ pending_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-title">Cancelled</h6>
+                <p class="display-6">{{ cancelled_count }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
