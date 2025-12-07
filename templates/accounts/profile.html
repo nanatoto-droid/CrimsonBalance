@@ -6,7 +6,44 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 offset-md-2">
-        <div class="card">
+        <!-- Profile Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-id-card me-2"></i>My Profile</h4>
+            </div>
+            <div class="card-body d-flex align-items-center">
+                <div class="text-center me-4">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" class="rounded-circle" width="120" height="120" alt="Profile">
+                    {% else %}
+                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                            <i class="fas fa-user fa-3x text-light"></i>
+                        </div>
+                    {% endif %}
+                    <span class="badge mt-2 {{ user.user_type }}-badge">{{ user.get_user_type_display }}</span>
+                    {% if user.is_verified %}
+                        <span class="badge bg-success mt-2"><i class="fas fa-check-circle"></i> Verified</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+                    <p class="mb-1"><i class="fas fa-phone me-2"></i>{{ user.phone_number|default:"Not provided" }}</p>
+                    <p class="mb-1"><i class="fas fa-tint me-2"></i>{{ user.blood_group|default:"Not specified" }}</p>
+                    <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i>{{ user.city|default:"Unknown" }}</p>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-primary" id="editProfileBtn">
+                        <i class="fas fa-user-edit me-2"></i>Edit Profile
+                    </button>
+                        <a href="{% url 'password_change' %}" class="btn btn-warning ms-2">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="editProfileForm" class="card d-none">
             <div class="card-header">
                 <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Edit Profile</h4>
             </div>
@@ -71,11 +108,30 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>Save Changes
                         </button>
-                        <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+                        <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const editBtn = document.getElementById("editProfileBtn");
+  const cancelBtn = document.getElementById("cancelEditBtn");
+  const formCard = document.getElementById("editProfileForm");
+
+  editBtn.addEventListener("click", function() {
+    formCard.classList.remove("d-none");   // show form
+    editBtn.classList.add("d-none");       // hide button
+  });
+
+  cancelBtn.addEventListener("click", function() {
+    formCard.classList.add("d-none");      // hide form
+    editBtn.classList.remove("d-none");    // show button again
+  });
+});
+</script>
+{% endblock %}
 {% endblock %}

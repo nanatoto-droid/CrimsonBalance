@@ -10,6 +10,9 @@ from .models import BloodRequest
 from django.utils.dateparse import parse_date
 from .forms import InformationPostForm
 from django.utils import timezone
+from .models import InformationPost
+
+
 
 def home(request):
     # Base context
@@ -233,16 +236,30 @@ def information_center(request):
     
     # Filter by category
     category = request.GET.get('category', '')
+   
     if category:
         posts = posts.filter(category=category)
     
-    # Get unique categories with counts
-    categories = InformationPost.objects.filter(is_published=True).values(
-        'category'
-    ).annotate(
-        count=Count('category')
-    ).order_by('category')
-    
+     # Aggregate categories with counts
+    raw_categories = (
+        InformationPost.objects.filter(is_published=True)
+        .values('category')
+        .annotate(count=Count('category'))
+        .order_by('category')
+    )
+
+    # Map choice values to display labels
+    choice_map = dict(InformationPost._meta.get_field('category').choices)
+    categories = [
+        {
+            'value': item['category'],
+            'label': choice_map.get(item['category'], item['category']),
+            'count': item['count'],
+        }
+        for item in raw_categories
+    ]
+
+
     # Pagination
     paginator = Paginator(posts, 6)  # Show 6 posts per page
     page_number = request.GET.get('page')

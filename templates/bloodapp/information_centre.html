@@ -20,15 +20,16 @@
             </div>
             <div class="card-body">
                 <div class="list-group list-group-flush">
-                    <a href="{% url 'information_center' %}" 
-                       class="list-group-item list-group-item-action {% if not active_category %}active{% endif %}">
+                    <a href="{% url 'information_center' %}"
+                        class="list-group-item list-group-item-action {% if not active_category %}active{% endif %}">
                         All Categories
                     </a>
-                    {% for category in categories %}
-                    <a href="?category={{ category.category }}" 
-                       class="list-group-item list-group-item-action {% if active_category == category.category %}active{% endif %}">
-                        {{ category.get_category_display }}
-                        <span class="badge bg-primary rounded-pill float-end">{{ category.count }}</span>
+
+                    {% for c in categories %}
+                    <a href="?category={{ c.value }}"
+                        class="list-group-item list-group-item-action {% if active_category == c.value %}active{% endif %}">
+                        {{ c.label }}
+                        <span class="badge bg-primary rounded-pill float-end">{{ c.count }}</span>
                     </a>
                     {% endfor %}
                 </div>
