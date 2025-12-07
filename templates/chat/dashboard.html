@@ -10,23 +10,26 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Messages</h5>
                 <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newChatModal">
-                    <i class="fas fa-plus"></i> New
+                    <i class="fas fa-plus"></i> Start Conversation
                 </button>
             </div>
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
-                    <div class="text-center py-4">
-                        <i class="fas fa-comments fa-2x text-muted mb-3"></i>
-                        <p class="text-muted">No chat rooms yet</p>
-                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newChatModal">
-                            Start a Conversation
-                        </button>
-                    </div>
+                    {% for room in rooms %}
+                        <a href="{% url 'room' room_id=room.id %}" class="list-group-item list-group-item-action">
+                            {{ room.name }}
+                        </a>
+                    {% empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-comments fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">No chat rooms yet</p>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
 
-        <!-- Online Users -->
+        <!-- Available Users -->
         <div class="card mt-4">
             <div class="card-header">
                 <h6 class="mb-0"><i class="fas fa-user-check me-2"></i>Available Users</h6>
@@ -34,25 +37,25 @@
             <div class="card-body">
                 <div class="list-group list-group-flush">
                     {% for user in users %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-0">{{ user.username }}</h6>
-                        <small class="text-muted">{{ user.user_type }}</small>
-                    </div>
-                    <a href="{% url 'room' room_id=user.id %}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-comment"></i>
-                    </a>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">{{ user.username }}</h6>
+                                <small class="text-muted">{{ user.user_type }}</small>
+                            </div>
+                            <a href="{% url 'start_chat' user.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-comment"></i>
+                            </a>
+                        </div>
+                    {% empty %}   
+                        <p class="text-muted">No users available</p>
+                    {% endfor %}
                 </div>
-                {% empty %}
-                <p class="text-muted">No users available</p>
-                {% endfor %}
-            </div>
             </div>
         </div>
     </div>
 
     <div class="col-md-8">
-        <!-- Chat Area -->
+        <!-- Placeholder for when no room selected -->
         <div class="card h-100">
             <div class="card-header">
                 <h5 class="mb-0"><i class="fas fa-comment-dots me-2"></i>Select a conversation</h5>
@@ -61,65 +64,72 @@
                 <i class="fas fa-comments fa-4x text-muted mb-3"></i>
                 <h4>Welcome to Messages</h4>
                 <p class="text-muted text-center">
-                    Select a conversation from the list or start a new one<br>
+                    Select a conversation from the list or start a new one
                     to begin messaging.
                 </p>
-                <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newChatModal">
-                    <i class="fas fa-plus me-2"></i>Start New Conversation
-                </button>
             </div>
         </div>
     </div>
 </div>
-
 <!-- New Chat Modal -->
 <div class="modal fade" id="newChatModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Start New Conversation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="newChatForm">
-                    <div class="mb-3">
-                        <label class="form-label">Select User</label>
-                        <select class="form-select" id="chatParticipants">
-                            <option value="1">Dr. Smith (Doctor)</option>
-                            <option value="2">John Doe (Donor)</option>
-                            <option value="3">Jane Smith (Recipient)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-control" id="initialMessage" rows="3" placeholder="Type your initial message..."></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="startChatBtn">Start Chat</button>
-            </div>
-        </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Start New Conversation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="newChatForm">
+          <div class="mb-3">
+            <label class="form-label">Select User</label>
+            <select class="form-select" id="chatParticipants">
+              {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }} ({{ user.user_type }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Message</label>
+            <textarea class="form-control" id="initialMessage" rows="3" placeholder="Type your initial message..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="startChatBtn">Start Chat</button>
+      </div>
     </div>
+  </div>
 </div>
 
 {% block extra_js %}
 <script>
 $(document).ready(function() {
-    // Start chat with user
-    $('.start-chat').click(function() {
-        alert('Chat feature will be available soon!');
+  // Start chat button in modal
+  $('#startChatBtn').click(function() {
+    var selectedUserId = $('#chatParticipants').val();
+    var message = $('#initialMessage').val();
+
+    $.ajax({
+      url: "{% url 'start_chat_with_message' %}",
+      method: "POST",
+      data: {
+        user_id: selectedUserId,
+        message: message,
+        csrfmiddlewaretoken: '{{ csrf_token }}'
+      },
+      success: function(response) {
+        // Redirect to the new room
+        window.location.href = "/chat/room/" + response.room_id + "/";
+      },
+      error: function(xhr) {
+        alert("Error: " + xhr.responseJSON.error);
+      }
     });
-    
-    // Start chat button in modal
-    $('#startChatBtn').click(function() {
-        var selectedUser = $('#chatParticipants option:selected').text();
-        var message = $('#initialMessage').val();
-        
-        alert('Starting chat with ' + selectedUser + '\nMessage: ' + message);
-        $('#newChatModal').modal('hide');
-    });
+
+    $('#newChatModal').modal('hide');
+  });
 });
 </script>
 {% endblock %}

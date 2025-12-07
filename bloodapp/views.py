@@ -12,24 +12,52 @@ from .forms import InformationPostForm
 from django.utils import timezone
 
 def home(request):
+    # Base context
+    blood_inventory = BloodInventory.objects.all()
+    recent_posts = InformationPost.objects.filter(is_published=True).order_by('-created_at')[:3]
+
+    # Inventory safety checks
+    critical_groups = [inv for inv in blood_inventory if getattr(inv, 'is_critical', False)]
+    has_critical = len(critical_groups) > 0
+
+    # Impact stats (adjust model names if different in your project)
+    total_donations = BloodDonation.objects.count()
+    total_requests = BloodRequest.objects.count()
+    fulfilled_requests_total = BloodRequest.objects.filter(is_fulfilled=True).count()
+    active_donors = CustomUser.objects.filter(user_type='donor').count()
+    active_recipients = CustomUser.objects.filter(user_type='recipient').count()
+
     context = {
-        'blood_inventory': BloodInventory.objects.all(),
-        'recent_posts': InformationPost.objects.filter(is_published=True)[:3],
+        'blood_inventory': blood_inventory,
+        'recent_posts': recent_posts,
+        'has_critical': has_critical,
+        'critical_groups': critical_groups,
+        'total_donations': total_donations,
+        'total_requests': total_requests,
+        'fulfilled_requests_total': fulfilled_requests_total,
+        'active_donors': active_donors,
+        'active_recipients': active_recipients,
     }
-    
+
+    # Personalization
     if request.user.is_authenticated:
         user = request.user
-        
+
         if user.user_type == 'donor':
             context['donation_count'] = BloodDonation.objects.filter(donor=user).count()
             last_donation = BloodDonation.objects.filter(donor=user).order_by('-donation_date').first()
             context['last_donation'] = last_donation.donation_date if last_donation else None
-            
+
         elif user.user_type == 'recipient':
             context['request_count'] = BloodRequest.objects.filter(recipient=user).count()
             context['fulfilled_requests'] = BloodRequest.objects.filter(recipient=user, is_fulfilled=True).count()
-    
+
+        elif user.user_type in ['doctor', 'admin']:
+            # Simple role flags for hero and quick actions
+            context['is_staff_role'] = True
+
     return render(request, 'home.html', context)
+
 
 @login_required
 def donation_history(request):
